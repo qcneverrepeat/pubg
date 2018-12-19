@@ -92,7 +92,30 @@ p1 + geom_line(linetype="dotted") + labs(title = '', x = 'Date',y = 'Game Heat')
 day_ts <- ts(day$Freq)
 plot(day_ts)
 
+library(TTR)
+smo1 <- SMA(day_ts, n=7)
+som2 <- data.frame(smo1)
+som2 <- cbind(som2,date$Var1)
+colnames(som2) <- c('freq','date')
+som2$date <- as.Date(som2$date)
+p1 <- ggplot(data = som2, aes(x = date, y = freq))
+p1 + geom_line(linetype="dotted") + labs(title = '', x = 'Date',y = 'Game Heat') + scale_x_date(breaks = date_breaks("15 days")) + geom_point()
+
+date$weekday <- weekdays(as.Date(date$Var1))
+week <- data.frame(table(date$weekday))
+
+sum <- data.frame(tapply(date$Freq, INDEX = as.factor(date$weekday), FUN = sum, simplify = TRUE))
+sum$weekday <- rownames(sum)
+colnames(sum) <- c('freq','weekday')
+colnames(week) <- c('weekday','freq')
+week <- merge(sum, week,by.x = 'weekday',by.y = 'Var1')
+week$aver <- week$freq/week$Freq
+week <- week[c(7,1,4,5,6,2,3),]
+rownames(week) <- 1:7
+week$weekday <- factor(week$weekday,ordered = T, levels = c("星期一", "星期二" ,"星期三", "星期四", "星期五", "星期六", "星期日"))
+ggplot(data = week, aes(x=weekday, y=aver,group=1)) + geom_line(linetype="dotted")+ geom_point()+labs(title = '', x = '',y = 'Game Heat')
 ```
+
 
 ```{r}
 # death points heatmap
